@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>spotify-playlist</title>
+  <meta name="description" content="Página HTML para ouvir sua playlist do Spotify sem abrir o app do Spotify." />
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@500,700&display=swap" rel="stylesheet" />
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --text-2xl: clamp(2rem, 1.2rem + 2.5vw, 3.5rem);
+
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-10: 2.5rem;
+      --space-12: 3rem;
+      --space-16: 4rem;
+
+      --color-bg: #f7f6f2;
+      --color-surface: #f9f8f5;
+      --color-surface-2: #fbfbf9;
+      --color-surface-offset: #edeae5;
+      --color-border: #d4d1ca;
+      --color-text: #28251d;
+      --color-text-muted: #6f6c65;
+      --color-text-faint: #9e9b95;
+      --color-primary: #01696f;
+      --color-primary-hover: #0c4e54;
+      --color-primary-highlight: #cedcd8;
+      --color-text-inverse: #f9f8f4;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.08);
+      --shadow-md: 0 10px 30px rgba(0,0,0,0.10);
+      --radius-sm: 0.5rem;
+      --radius-md: 0.875rem;
+      --radius-lg: 1.25rem;
+      --radius-xl: 1.75rem;
+      --radius-full: 999px;
+      --transition-interactive: 180ms cubic-bezier(0.16,1,0.3,1);
+      --font-display: 'Cabinet Grotesk', 'Inter', sans-serif;
+      --font-body: 'Satoshi', 'Inter', sans-serif;
+      --content-default: 1100px;
+    }
+
+    [data-theme="dark"] {
+      --color-bg: #101112;
+      --color-surface: #17191b;
+      --color-surface-2: #1d2023;
+      --color-surface-offset: #23272b;
+      --color-border: #30353a;
+      --color-text: #f2f4f5;
+      --color-text-muted: #b4bcc4;
+      --color-text-faint: #7d8790;
+      --color-primary: #1db954;
+      --color-primary-hover: #19a54b;
+      --color-primary-highlight: rgba(29,185,84,0.14);
+      --color-text-inverse: #08110b;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+      --shadow-md: 0 18px 40px rgba(0,0,0,0.35);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      min-height: 100dvh;
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: 1.6;
+      color: var(--color-text);
+      background:
+        radial-gradient(circle at top left, rgba(29,185,84,0.16), transparent 24%),
+        radial-gradient(circle at top right, rgba(29,185,84,0.08), transparent 20%),
+        linear-gradient(180deg, var(--color-bg), #0d0f10 100%);
+    }
+    img, svg, iframe { display: block; max-width: 100%; }
+    button, a { transition: background var(--transition-interactive), color var(--transition-interactive), border-color var(--transition-interactive), transform var(--transition-interactive), box-shadow var(--transition-interactive); }
+    button { cursor: pointer; border: none; background: none; color: inherit; font: inherit; }
+    a { color: inherit; text-decoration: none; }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+    .skip-link {
+      position: absolute; left: var(--space-4); top: -3rem; background: var(--color-primary);
+      color: var(--color-text-inverse); padding: var(--space-3) var(--space-4); border-radius: var(--radius-full); z-index: 10;
+    }
+    .skip-link:focus { top: var(--space-4); }
+    .page {
+      width: min(calc(100% - 2rem), var(--content-default));
+      margin-inline: auto;
+      padding: var(--space-6) 0 var(--space-12);
+    }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+      margin-bottom: var(--space-8);
+    }
+    .brand {
+      display: inline-flex; align-items: center; gap: var(--space-3); font-size: var(--text-sm); color: var(--color-text-muted);
+    }
+    .brand svg { width: 2rem; height: 2rem; color: var(--color-primary); }
+    .theme-toggle {
+      min-width: 44px; min-height: 44px; display: inline-grid; place-items: center; border-radius: var(--radius-full);
+      border: 1px solid rgba(255,255,255,0.1); background: var(--color-surface);
+      box-shadow: var(--shadow-sm);
+    }
+    .theme-toggle:hover { transform: translateY(-1px); background: var(--color-surface-2); }
+    .hero {
+      display: grid; grid-template-columns: 1.05fr 0.95fr; gap: var(--space-6); align-items: stretch;
+      margin-bottom: var(--space-6);
+    }
+    .hero-card, .embed-card, .notes-card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)), var(--color-surface);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+    }
+    .hero-card {
+      padding: clamp(var(--space-6), 4vw, var(--space-12));
+      display: flex; flex-direction: column; justify-content: space-between; min-height: 320px;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-full); background: var(--color-primary-highlight); color: var(--color-primary);
+      font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; width: fit-content;
+      margin-bottom: var(--space-4);
+    }
+    h1 {
+      font-family: var(--font-display); font-size: var(--text-2xl); line-height: 1.02; letter-spacing: -0.03em;
+      max-width: 12ch; margin-bottom: var(--space-4);
+    }
+    .hero p { color: var(--color-text-muted); max-width: 58ch; }
+    .actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-6); }
+    .btn {
+      min-height: 44px; padding: 0.85rem 1.1rem; border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: 700;
+      display: inline-flex; align-items: center; gap: var(--space-2);
+    }
+    .btn-primary { background: var(--color-primary); color: #fff; }
+    .btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); }
+    .btn-secondary {
+      background: transparent; color: var(--color-text); border: 1px solid rgba(255,255,255,0.12);
+    }
+    .btn-secondary:hover { background: var(--color-surface-2); }
+    .mini-stats {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); margin-top: var(--space-8);
+    }
+    .stat {
+      padding: var(--space-4); border-radius: var(--radius-lg); background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .stat strong { display: block; font-size: var(--text-lg); font-family: var(--font-display); }
+    .stat span { color: var(--color-text-muted); font-size: var(--text-sm); }
+    .embed-card { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-4); }
+    .embed-shell {
+      border-radius: calc(var(--radius-xl) - var(--space-4)); overflow: hidden; background: #121212; border: 1px solid rgba(255,255,255,0.06);
+      min-height: 352px;
+    }
+    iframe { width: 100%; min-height: 100%; border: 0; }
+    .helper {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); color: var(--color-text-muted); font-size: var(--text-sm);
+    }
+    .notes-card {
+      padding: var(--space-6); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4);
+    }
+    .note {
+      padding: var(--space-4); border-radius: var(--radius-lg); background: var(--color-surface-2); border: 1px solid rgba(255,255,255,0.06);
+    }
+    .note h2 {
+      font-size: var(--text-lg); font-family: var(--font-display); margin-bottom: var(--space-2);
+    }
+    .note p { color: var(--color-text-muted); font-size: var(--text-sm); }
+    .footer {
+      margin-top: var(--space-6); color: var(--color-text-faint); font-size: var(--text-xs); text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .notes-card { grid-template-columns: 1fr; }
+      .mini-stats { grid-template-columns: 1fr; }
+      h1 { max-width: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#player">Pular para o player</a>
+  <main class="page">
+    <header class="topbar" aria-label="Cabeçalho da página">
+      <div class="brand">
+        <svg viewBox="0 0 64 64" fill="none" aria-label="Logo da playlist" role="img">
+          <rect x="6" y="6" width="52" height="52" rx="18" stroke="currentColor" stroke-width="4"></rect>
+          <path d="M20 25.5C29.5 22.5 39.3 23.1 47 27" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+          <path d="M20 34C28.5 31.4 37.4 32.1 44 35.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.8"></path>
+          <path d="M20 42C26.5 40.1 33.1 40.5 38.5 43" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.6"></path>
+        </svg>
+        <div>
+          <strong style="display:block;color:var(--color-text)">Spotify Playlist Viewer</strong>
+          <span>Abra, toque e ouça direto no navegador</span>
+        </div>
+      </div>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Alternar tema"></button>
+    </header>
+
+    <section class="hero" aria-label="Apresentação da playlist">
+      <article class="hero-card">
+        <div>
+          <div class="eyebrow">Playlist embutida</div>
+          <h1>Sua playlist do Spotify em uma página HTML própria.</h1>
+          <p>Esta página usa o player incorporado do Spotify para você ouvir a playlist sem precisar abrir o aplicativo do Spotify. Se quiser, troque apenas o link da playlist no código para reutilizar com qualquer outra playlist pública.</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="#player">Ouvir agora</a>
+            <a class="btn btn-secondary" href="https://open.spotify.com/playlist/58MwZ1xbgKWZ1jeXbM4VPK?si=013ZHF8fTWSby4TaNOYUqw" target="_blank" rel="noopener noreferrer">Abrir no Spotify</a>
+          </div>
+        </div>
+        <div class="mini-stats" aria-label="Informações rápidas">
+          <div class="stat"><strong>Embed</strong><span>Player oficial</span></div>
+          <div class="stat"><strong>100%</strong><span>HTML estático</span></div>
+          <div class="stat"><strong>Mobile</strong><span>Responsivo</span></div>
+        </div>
+      </article>
+
+      <section class="embed-card" id="player" aria-labelledby="player-title">
+        <div>
+          <h2 id="player-title" style="font-family:var(--font-display);font-size:var(--text-xl);margin-bottom:var(--space-2)">Player da playlist</h2>
+          <p style="color:var(--color-text-muted)">Clique em play e escute direto aqui.</p>
+        </div>
+        <div class="embed-shell">
+          <iframe
+            title="Spotify playlist embed"
+            src="https://open.spotify.com/embed/playlist/58MwZ1xbgKWZ1jeXbM4VPK?utm_source=generator&theme=0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"></iframe>
+        </div>
+        <div class="helper">
+          <span>Se a playlist for privada ou exigir login, o Spotify pode pedir autenticação.</span>
+          <span>Compatível com desktop e celular.</span>
+        </div>
+      </section>
+    </section>
+
+    <section class="notes-card" aria-label="Detalhes da página">
+      <article class="note">
+        <h2>Sem app aberto</h2>
+        <p>Você escuta pela incorporação oficial do Spotify dentro do navegador, então não precisa abrir o aplicativo separado.</p>
+      </article>
+      <article class="note">
+        <h2>Fácil de editar</h2>
+        <p>Para trocar a playlist, substitua o ID no link do iframe por outro ID de playlist pública do Spotify.</p>
+      </article>
+      <article class="note">
+        <h2>Visual limpo</h2>
+        <p>A página já vem com tema escuro, botão de alternância de tema e layout responsivo para usar localmente ou publicar em um servidor.</p>
+      </article>
+    </section>
+
+    <p class="footer">Feito para ouvir sua playlist no navegador com o player oficial do Spotify.</p>
+  </main>
+
+  <script>
+    (function () {
+      const toggle = document.querySelector('[data-theme-toggle]');
+      const root = document.documentElement;
+      let theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      root.setAttribute('data-theme', theme);
+
+      function renderIcon(mode) {
+        toggle.innerHTML = mode === 'dark'
+          ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+          : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>';
+        toggle.setAttribute('aria-label', mode === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro');
+      }
+
+      renderIcon(theme);
+      toggle.addEventListener('click', function () {
+        theme = theme === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', theme);
+        renderIcon(theme);
+      });
+    }());
+  </script>
+</body>
+</html>
