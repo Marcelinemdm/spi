@@ -2,9 +2,10 @@ name: Generate index.json
 
 on:
   push:
-    branches: ["main"]
+    branches: [main]
     paths:
       - "song/**"
+      - "scripts/generate-index.py"
       - ".github/workflows/generate-index.yml"
   workflow_dispatch:
 
@@ -16,38 +17,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Generate index.json
-        run: |
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-          from datetime import datetime, timezone
+        run: python3 scripts/generate-index.py
 
-          root = Path("song")
-          exts = {".mp3", ".m4a", ".aac", ".ogg", ".wav", ".flac", ".opus", ".webm"}
-          files = []
-
-          if root.exists():
-              for p in sorted(root.iterdir(), key=lambda x: x.name.lower()):
-                  if p.is_file() and p.suffix.lower() in exts:
-                      files.append(p.name)
-
-          out = Path("song/index.json")
-          payload = {
-              "generated_at": datetime.now(timezone.utc).isoformat(),
-              "files": files
-          }
-
-          out.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-          print(f"Wrote {out} with {len(files)} files")
-          PY
-
-      - name: Commit index.json
+      - name: Commit and push if changed
         run: |
           if git diff --quiet -- song/index.json; then
             echo "No changes"
